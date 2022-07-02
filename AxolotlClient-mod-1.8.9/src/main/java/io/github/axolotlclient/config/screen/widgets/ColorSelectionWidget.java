@@ -13,6 +13,7 @@ import net.minecraft.util.Identifier;
 import org.lwjgl.opengl.GL11;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class ColorSelectionWidget extends ButtonWidget {
     private final ColorOption option;
@@ -48,19 +49,34 @@ public class ColorSelectionWidget extends ButtonWidget {
     }
 
     public void onClick(int mouseX, int mouseY){
-        if(pickerImage.isMouseOver(mouseX, mouseY)) {
-            ByteBuffer pixels = ByteBuffer.allocateDirect(16);
-            //IntBuffer pixels = IntBuffer.allocate(4);
-            //IntBuffer color = buf.asIntBuffer();
-
-            MinecraftClient.getInstance().getFramebuffer().bind(true);
-            GL11.glReadPixels(mouseX, mouseY, 1, 1, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixels);
-
-            String color = (pixels.get(0) & 0xFF) +""+ (pixels.get(1) & 0xFF)+ (pixels.get(2) & 0xFF)+ (pixels.get(3) & 0xFF);
-            System.out.println(color);
-
-            option.set(new Color(pixels.get(0) & 0xFF, pixels.get(1) & 0xFF, pixels.get(2) & 0xFF, pixels.get(3) & 0xFF));
+        final ObjectColorPicker picker = pickerInfo.getPicker();
+        OnObjectPickedListener listener = picker.mObjectPickedListener;
+        if (listener != null) {
+            final ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(4);
+            pixelBuffer.order(ByteOrder.nativeOrder());
+            GL11.glReadPixels(pickerInfo.getX(),
+                    picker.mRenderer.getViewportHeight() - pickerInfo.getY(),
+                    1, 1, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixelBuffer);
+            GL11.glBindFramebuffer(GL11.GL_FRAMEBUFFER, 0);
+            pixelBuffer.rewind();
+            final int r = pixelBuffer.get(0) & 0xff;
+            final int g = pixelBuffer.get(1) & 0xff;
+            final int b = pixelBuffer.get(2) & 0xff;
+            final int a = pixelBuffer.get(3) & 0xff;
+            final int index = Color.argb(a, r, g, b);
+            if (0 <= index && index < picker.mObjectLookup.size()) {
+                // Index may have holes due to unregistered objects
+                Object3D pickedObject = picker.mObjectLookup.get(index);
+                if (pickedObject != null) {
+                    listener.onObjectPicked(pickedObject);
+                    return;
+                }
+            }
+            listener.onNoObjectPicked();
+        }
         }
     }
 
+    private static class GL_FRAMEBUFFER {
+    }
 }
