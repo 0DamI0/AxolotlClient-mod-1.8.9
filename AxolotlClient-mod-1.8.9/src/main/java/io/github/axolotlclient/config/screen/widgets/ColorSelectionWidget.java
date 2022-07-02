@@ -24,10 +24,10 @@ public class ColorSelectionWidget extends ButtonWidget {
         super(0, 100, 50, "");
         this.option=option;
         Window window= new Window(MinecraftClient.getInstance());
-        width=window.getWidth()-200;
-        height=window.getHeight()-100;
+        width=window.getWidth()-280;
+        height=window.getHeight()-200;
 
-        pickerImage = new Rectangle(120, 70, width/2, height/2);
+        pickerImage = new Rectangle(170, 150, width/4, height/2);
 
         //rect = new Rectangle(100, 50, width-200, height-100);
     }
@@ -35,8 +35,8 @@ public class ColorSelectionWidget extends ButtonWidget {
     @Override
     public void render(MinecraftClient client, int mouseX, int mouseY) {
 
-        DrawUtil.fillRect(new Rectangle(100, 50, width, height), Color.DARK_GRAY.withAlpha(127));
-        DrawUtil.outlineRect(new Rectangle(100, 50, width, height), Color.BLACK);
+        DrawUtil.fillRect(new Rectangle(145, 65, width, height), Color.DARK_GRAY.withAlpha(127));
+        DrawUtil.outlineRect(new Rectangle(145, 65, width, height), Color.BLACK);
 
         DrawUtil.outlineRect(pickerImage, Color.DARK_GRAY.withAlpha(127));
 
